@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import java.util.LinkedHashMap;
 import java.util.List;
 import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
@@ -102,6 +103,7 @@ public class LocationRestTestResourceTest {
 
     assertThat(returnList.size(), is(equalTo(2)));
     assertThat(returnList.get(0).getId(), is(equalTo(downstreamReturnList.get(0).getId())));
+    assertThat(returnList.get(1).getId(), is(equalTo(downstreamReturnList.get(1).getId())));
   }
 
   @Test

@@ -8,6 +8,9 @@ server:
 
 downstreamDataSource: http://localhost:9898
 
+homeCity: London
+cityRadius: 50
+
 logging:
   level: INFO
   loggers:

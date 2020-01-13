@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -40,7 +41,10 @@ public class LocationRestTestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/resolveHomeCityResidents")
   public Response resolveSingleCityRecords() {
+    ObjectMapper mapper = new ObjectMapper();
+    List<UserRecordItem> returnList;
     Response response;
+
     try {
 
       HttpResponse downstreamResponse = captureCityResidents();
@@ -54,11 +58,15 @@ public class LocationRestTestResource {
 
       } else {
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        List<UserRecordItem> returnList =
+        returnList =
             mapper.readValue(
                 EntityUtils.toString(downstreamResponse.getEntity()), new TypeReference<>() {});
+
+        LOGGER.debug("read {} items from downstream service call for {} residents", returnList.size(), configuration.getHomeCity());
+        List<Integer> returnIds = outputListUserIds(returnList);
+
+
+
 
         response =
             Response.status(downstreamResponse.getStatusLine().getStatusCode())
@@ -86,6 +94,7 @@ public class LocationRestTestResource {
   private HttpResponse captureCityResidents() throws UserLocationException, IOException {
 
     // normally the 'location' would be a parameter but for this example it is fixed from config
+    LOGGER.debug("building location input item from config -> city = {}", configuration.getHomeCity());
     LocationInputItem inputItem = new LocationInputItem();
     inputItem.setCity(configuration.getHomeCity());
 
@@ -95,7 +104,18 @@ public class LocationRestTestResource {
     }
 
     HttpGet httpGet = new HttpGet(buildLocationEndpoint(inputItem));
+
+    LOGGER.info("call downstream service '{}' for city residents", buildLocationEndpoint(inputItem));
     return HttpClientBuilder.create().build().execute(httpGet);
+  }
+
+  private List<Integer> outputListUserIds(List<UserRecordItem> inputItems) {
+    ArrayList<Integer> outList = new ArrayList<>();
+    for (UserRecordItem item : inputItems) {
+      outList.add(item.getId());
+    }
+
+    return outList;
   }
 
   private String serialiseForOutput(List<UserRecordItem> fullListItem)
