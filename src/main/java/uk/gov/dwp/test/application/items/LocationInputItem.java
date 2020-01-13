@@ -1,0 +1,20 @@
+package uk.gov.dwp.test.application.items;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
+
+public class LocationInputItem extends AbstractItem {
+
+  @NotNull
+  @JsonProperty("city")
+  private String city;
+
+  public String getCity() {
+    return city;
+  }
+
+  public void setCity(String city) {
+    this.city = city;
+  }
+}

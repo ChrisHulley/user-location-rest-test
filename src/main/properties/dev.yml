@@ -1,0 +1,18 @@
+server:
+  applicationConnectors:
+  - type: ${SERVER_APP_CONNECTOR:-http}
+    port: ${SERVER_APP_PORT:-9044}
+  adminConnectors:
+  - type: ${SERVER_ADMIN_CONNECTOR:-http}
+    port: ${SERVER_ADMIN_PORT:-0}
+
+downstreamDataSource: ${DOWNSTREAM_API_URL:-http://localhost:9898}
+
+homeCity: London
+cityRadius: 50
+
+logging:
+  level: INFO
+  loggers:
+    "uk.gov": DEBUG
+

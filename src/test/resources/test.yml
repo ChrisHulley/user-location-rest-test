@@ -1,0 +1,14 @@
+server:
+  applicationConnectors:
+  - type: http
+    port: 9044
+  adminConnectors:
+  - type: http
+    port: 0
+
+downstreamDataSource: http://localhost:9898
+
+logging:
+  level: INFO
+  loggers:
+    "uk.gov": DEBUG
