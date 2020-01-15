@@ -6,11 +6,7 @@ import static org.junit.Assert.assertTrue;
 import es.blackleg.java.geocalc.DegreeCoordinate;
 import org.junit.Test;
 
-public class LocationCalculatorTest {
-
-  // https://www.latlong.net/place/london-uk-14153.html
-  private static final DegreeCoordinate LONDON_LAT = new DegreeCoordinate(51.509865);
-  private static final DegreeCoordinate LONDON_LNG = new DegreeCoordinate(-0.118092);
+public class DistanceCalculatorTest {
 
   @Test
   public void successStPaulsLondon() {
@@ -32,9 +28,9 @@ public class LocationCalculatorTest {
 
   private boolean testOutputs(DegreeCoordinate inputLat, DegreeCoordinate inputLng, double allowableRadius) {
     return
-        LocationCalculator.distanceWithinAllowableRadius(
-            LONDON_LAT.getDecimalDegrees(),
-            LONDON_LNG.getDecimalDegrees(),
+        DistanceCalculator.distanceWithinAllowableRadius(
+            ServiceConstants.LONDON_LAT,
+            ServiceConstants.LONDON_LNG,
             inputLat.getDecimalDegrees(),
             inputLng.getDecimalDegrees(),
             allowableRadius);

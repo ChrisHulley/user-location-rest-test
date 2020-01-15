@@ -7,8 +7,6 @@ server:
     port: ${SERVER_ADMIN_PORT:-0}
 
 downstreamDataSource: ${DOWNSTREAM_API_URL:-http://localhost:9898}
-
-homeCity: London
 cityRadius: 50
 
 logging:

@@ -25,9 +25,14 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import uk.gov.dwp.test.application.items.UserRecordItem;
 import uk.gov.dwp.test.application.items.ViewItems;
+import uk.gov.dwp.test.application.utils.DistanceCalculator;
+import uk.gov.dwp.test.application.utils.ServiceConstants;
 
 @Path("/")
 public class LocationRestTestResource {
+  private static final String DOWNSTREAM_CITY_ENDPOINT = "%s/city/%s/users";
+  private static final String DOWNSTREAM_ALL_USERS_ENDPOINT = "%s/users";
+
   private static final Logger LOGGER =
       LoggerFactory.getLogger(LocationRestTestResource.class.getName());
 
@@ -42,36 +47,48 @@ public class LocationRestTestResource {
   @Path("/resolveHomeCityResidents")
   public Response resolveSingleCityRecords() {
     ObjectMapper mapper = new ObjectMapper();
-    List<UserRecordItem> returnList;
-    Response response;
+    HttpResponse downstreamResponse;
+    Response response = null;
 
     try {
 
-      HttpResponse downstreamResponse = captureCityResidents();
+      // for the purposes of this example no json is passed and defaults to 'London'
+      LocationInputItem inputItem = new LocationInputItem();
 
-      if (downstreamResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-        throw new UserLocationException(
-            String.format(
-                "downstream service '%s' returned %d, rejecting",
-                configuration.getDownstreamDataSource(),
-                downstreamResponse.getStatusLine().getStatusCode()));
+      LOGGER.debug("built input item with city = {}", inputItem.getCity());
+      downstreamResponse =
+          callHttpGetQuery(new HttpGet(buildCityLocationEndpoint(inputItem.getCity())));
 
-      } else {
-
-        returnList =
+      if (downstreamResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+        List<UserRecordItem> cityUsers =
             mapper.readValue(
                 EntityUtils.toString(downstreamResponse.getEntity()), new TypeReference<>() {});
 
-        LOGGER.debug("read {} items from downstream service call for {} residents", returnList.size(), configuration.getHomeCity());
-        List<Integer> returnIds = outputListUserIds(returnList);
+        LOGGER.debug(
+            "collected {} items from downstream service call for {} residents",
+            cityUsers.size(),
+            inputItem.getCity());
 
+        downstreamResponse = callHttpGetQuery(new HttpGet(buildAllUsersEndpoint()));
+        if (downstreamResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+          List<UserRecordItem> allUsers =
+              mapper.readValue(
+                  EntityUtils.toString(downstreamResponse.getEntity()), new TypeReference<>() {});
 
+          LOGGER.debug(
+              "collected {} items from downstream service call for ALL users", allUsers.size());
 
+          response =
+              Response.status(downstreamResponse.getStatusLine().getStatusCode())
+                  .entity(serialiseForOutput(mergeInLocationRecords(cityUsers, allUsers)))
+                  .build();
 
-        response =
-            Response.status(downstreamResponse.getStatusLine().getStatusCode())
-                .entity(serialiseForOutput(returnList))
-                .build();
+        } else {
+          throwUserLocationException(downstreamResponse.getStatusLine().getStatusCode());
+        }
+
+      } else {
+        throwUserLocationException(downstreamResponse.getStatusLine().getStatusCode());
       }
 
     } catch (UserLocationException | IOException e) {
@@ -86,30 +103,49 @@ public class LocationRestTestResource {
     return response;
   }
 
-  private String buildLocationEndpoint(LocationInputItem item) {
-    return String.format(
-        "%s/city/%s/users", configuration.getDownstreamDataSource(), item.getCity());
-  }
+  private List<UserRecordItem> mergeInLocationRecords(
+      List<UserRecordItem> inputList, List<UserRecordItem> allUsersList) {
 
-  private HttpResponse captureCityResidents() throws UserLocationException, IOException {
+    List<Integer> userListIds = calcCityUserIds(inputList);
+    for (UserRecordItem item : allUsersList) {
 
-    // normally the 'location' would be a parameter but for this example it is fixed from config
-    LOGGER.debug("building location input item from config -> city = {}", configuration.getHomeCity());
-    LocationInputItem inputItem = new LocationInputItem();
-    inputItem.setCity(configuration.getHomeCity());
+      if (!userListIds.contains(item.getId())
+          && DistanceCalculator.distanceWithinAllowableRadius(
+              ServiceConstants.LONDON_LAT,
+              ServiceConstants.LONDON_LNG,
+              item.getLatitude(),
+              item.getLongitude(),
+              configuration.getCityRadius())) {
 
-    if (!inputItem.isContentValid()) {
-      throw new UserLocationException(
-          "'city' is null or empty, in this implementation it 'should' be impossible :-)");
+        userListIds.add(item.getId());
+        inputList.add(item);
+      }
     }
 
-    HttpGet httpGet = new HttpGet(buildLocationEndpoint(inputItem));
+    return inputList;
+  }
 
-    LOGGER.info("call downstream service '{}' for city residents", buildLocationEndpoint(inputItem));
+  private void throwUserLocationException(int status) throws UserLocationException {
+    throw new UserLocationException(
+        String.format(
+            "downstream service '%s' returned %d, rejecting",
+            configuration.getDownstreamDataSource(), status));
+  }
+
+  private String buildCityLocationEndpoint(String city) {
+    return String.format(DOWNSTREAM_CITY_ENDPOINT, configuration.getDownstreamDataSource(), city);
+  }
+
+  private String buildAllUsersEndpoint() {
+    return String.format(DOWNSTREAM_ALL_USERS_ENDPOINT, configuration.getDownstreamDataSource());
+  }
+
+  private HttpResponse callHttpGetQuery(HttpGet httpGet) throws IOException {
+    LOGGER.info("call downstream service '{}'", httpGet.getURI());
     return HttpClientBuilder.create().build().execute(httpGet);
   }
 
-  private List<Integer> outputListUserIds(List<UserRecordItem> inputItems) {
+  private List<Integer> calcCityUserIds(List<UserRecordItem> inputItems) {
     ArrayList<Integer> outList = new ArrayList<>();
     for (UserRecordItem item : inputItems) {
       outList.add(item.getId());
