@@ -7,8 +7,6 @@ server:
     port: 0
 
 downstreamDataSource: http://localhost:9898
-
-homeCity: London
 cityRadius: 50
 
 logging:
