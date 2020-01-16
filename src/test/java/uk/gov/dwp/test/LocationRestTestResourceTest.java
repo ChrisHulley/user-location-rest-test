@@ -5,10 +5,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
@@ -36,65 +40,30 @@ public class LocationRestTestResourceTest {
   private WireMockServer downstreamService = new WireMockServer(9898);
   private static final ObjectMapper mapper = new ObjectMapper();
 
+  private static List<UserRecordItem> exampleLondonVicinityUserList;
+  private static List<UserRecordItem> exampleLeedsVicinityUserList;
   private static List<UserRecordItem> downstreamReturnList;
-  private static UserRecordItem exampleLondonVicinityUser;
-  private static UserRecordItem exampleLeedsVicinityUser;
   private static String redactedCityRecordOutput;
 
   @Mock private LocationRestTestConfiguration configuration;
 
   @BeforeClass
-  public static void init() throws JsonProcessingException {
+  public static void init() throws IOException {
 
     downstreamReturnList =
         mapper.readValue(
-            "[\n"
-                + "  {\n"
-                + "    \"id\": 135,\n"
-                + "    \"first_name\": \"Mechelle\",\n"
-                + "    \"last_name\": \"Boam\",\n"
-                + "    \"email\": \"mboam3q@thetimes.co.uk\",\n"
-                + "    \"ip_address\": \"113.71.242.187\",\n"
-                + "    \"latitude\": -6.5115909,\n"
-                + "    \"longitude\": 105.652983\n"
-                + "  },\n"
-                + "  {\n"
-                + "    \"id\": 396,\n"
-                + "    \"first_name\": \"Terry\",\n"
-                + "    \"last_name\": \"Stowgill\",\n"
-                + "    \"email\": \"tstowgillaz@webeden.co.uk\",\n"
-                + "    \"ip_address\": \"143.190.50.240\",\n"
-                + "    \"latitude\": -6.7098551,\n"
-                + "    \"longitude\": 111.3479498\n"
-                + "  }\n"
-                + "]",
+            FileUtils.readFileToString(new File("src/test/resources/cityResidents.json")),
             new TypeReference<>() {});
 
-    exampleLondonVicinityUser =
+    exampleLondonVicinityUserList =
         mapper.readValue(
-            "{\n"
-                + "    \"id\": 998,\n"
-                + "    \"first_name\": \"John\",\n"
-                + "    \"last_name\": \"London\",\n"
-                + "    \"email\": \"ch@st-pauls.co.uk\",\n"
-                + "    \"ip_address\": \"113.71.240.182\",\n"
-                + "    \"latitude\": 51.513870,\n"
-                + "    \"longitude\": -0.098362\n"
-                + "  }",
-            UserRecordItem.class);
+            FileUtils.readFileToString(new File("src/test/resources/londonUserRecords.json")),
+            new TypeReference<>() {});
 
-    exampleLeedsVicinityUser =
+    exampleLeedsVicinityUserList =
         mapper.readValue(
-            "{\n"
-                + "    \"id\": 999,\n"
-                + "    \"first_name\": \"Chris\",\n"
-                + "    \"last_name\": \"Yorky\",\n"
-                + "    \"email\": \"ch@york-minster.co.uk\",\n"
-                + "    \"ip_address\": \"113.71.242.189\",\n"
-                + "    \"latitude\": 53.957162838,\n"
-                + "    \"longitude\": -1.07583303\n"
-                + "  }",
-            UserRecordItem.class);
+            FileUtils.readFileToString(new File("src/test/resources/yorkUserRecords.json")),
+            new TypeReference<>() {});
 
     redactedCityRecordOutput =
         new ObjectMapper()
@@ -117,7 +86,7 @@ public class LocationRestTestResourceTest {
 
   @Test
   public void runSuccessForLocationNoVicinity() throws JsonProcessingException {
-    stubForVicinityUserList(Collections.singletonList(exampleLeedsVicinityUser));
+    stubForVicinityUserList(exampleLeedsVicinityUserList);
     stubForLondonLondonUsers();
 
     LocationRestTestResource instance = new LocationRestTestResource(configuration);
@@ -139,7 +108,7 @@ public class LocationRestTestResourceTest {
 
   @Test
   public void runSuccessForLocationWithVicinity() throws JsonProcessingException {
-    stubForVicinityUserList(Collections.singletonList(exampleLondonVicinityUser));
+    stubForVicinityUserList(exampleLondonVicinityUserList);
     stubForLondonLondonUsers();
 
     LocationRestTestResource instance = new LocationRestTestResource(configuration);
@@ -154,14 +123,18 @@ public class LocationRestTestResourceTest {
 
     assertThat(outputList.size(), is(equalTo(3)));
     assertThat(
-        outputList.get(2).getFirstName(), is(equalTo(exampleLondonVicinityUser.getFirstName())));
+        outputList.get(2).getFirstName(), is(equalTo(exampleLondonVicinityUserList.get(0).getFirstName())));
     assertThat(
-        outputList.get(2).getLastName(), is(equalTo(exampleLondonVicinityUser.getLastName())));
+        outputList.get(2).getLastName(), is(equalTo(exampleLondonVicinityUserList.get(0).getLastName())));
   }
 
   @Test
   public void runSuccessForLocationDuplicateId() throws JsonProcessingException {
-    stubForVicinityUserList(Arrays.asList(exampleLondonVicinityUser, exampleLondonVicinityUser));
+    List<UserRecordItem> duplicatedList = new ArrayList<>();
+    duplicatedList.add(exampleLondonVicinityUserList.get(0));
+    duplicatedList.add(exampleLondonVicinityUserList.get(0));
+
+    stubForVicinityUserList(duplicatedList);
     stubForLondonLondonUsers();
 
     LocationRestTestResource instance = new LocationRestTestResource(configuration);
@@ -176,9 +149,43 @@ public class LocationRestTestResourceTest {
 
     assertThat(outputList.size(), is(equalTo(3)));
     assertThat(
-        outputList.get(2).getFirstName(), is(equalTo(exampleLondonVicinityUser.getFirstName())));
+        outputList.get(2).getFirstName(), is(equalTo(exampleLondonVicinityUserList.get(0).getFirstName())));
     assertThat(
-        outputList.get(2).getLastName(), is(equalTo(exampleLondonVicinityUser.getLastName())));
+        outputList.get(2).getLastName(), is(equalTo(exampleLondonVicinityUserList.get(0).getLastName())));
+  }
+
+  @Test
+  public void runErrorForUnknownLocation() {
+    LocationRestTestResource instance = new LocationRestTestResource(configuration);
+    Response response = instance.resolveSingleCityRecords();
+
+    assertThat(response.getStatus(), is(equalTo(HttpStatus.SC_BAD_REQUEST)));
+  }
+
+  @Test
+  public void runErrorForDownstreamErrorFirst() {
+    downstreamService.stubFor(
+        get(urlEqualTo("/city/London/users"))
+            .willReturn(aResponse().withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+
+    LocationRestTestResource instance = new LocationRestTestResource(configuration);
+    Response response = instance.resolveSingleCityRecords();
+
+    assertThat(response.getStatus(), is(equalTo(HttpStatus.SC_BAD_REQUEST)));
+  }
+
+  @Test
+  public void runErrorForDownstreamErrorSecond() throws JsonProcessingException {
+    stubForLondonLondonUsers();
+
+    downstreamService.stubFor(
+        get(urlEqualTo("/users"))
+            .willReturn(aResponse().withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+
+    LocationRestTestResource instance = new LocationRestTestResource(configuration);
+    Response response = instance.resolveSingleCityRecords();
+
+    assertThat(response.getStatus(), is(equalTo(HttpStatus.SC_BAD_REQUEST)));
   }
 
   private void stubForLondonLondonUsers() throws JsonProcessingException {
@@ -199,26 +206,4 @@ public class LocationRestTestResourceTest {
                     .withBody(mapper.writeValueAsString(vicinityReturnList))
                     .withStatus(HttpStatus.SC_OK)));
   }
-
-  // duplicate records
-
-  //  @Test
-  //  public void runErrorForUnknownLocation() {
-  //    LocationRestTestResource instance = new LocationRestTestResource(configuration);
-  //    Response response = instance.resolveSingleCityRecords();
-  //
-  //    assertThat(response.getStatus(), is(equalTo(HttpStatus.SC_BAD_REQUEST)));
-  //  }
-  //
-  //  @Test
-  //  public void runErrorForDownstreamError() {
-  //    downstreamService.stubFor(
-  //        get(urlEqualTo("/city/London/users"))
-  //            .willReturn(aResponse().withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)));
-  //
-  //    LocationRestTestResource instance = new LocationRestTestResource(configuration);
-  //    Response response = instance.resolveSingleCityRecords();
-  //
-  //    assertThat(response.getStatus(), is(equalTo(HttpStatus.SC_BAD_REQUEST)));
-  //  }
 }

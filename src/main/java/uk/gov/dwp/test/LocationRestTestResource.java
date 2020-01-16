@@ -45,7 +45,7 @@ public class LocationRestTestResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/resolveHomeCityResidents")
+  @Path("/singleCityAndVicinityUsers")
   public Response resolveSingleCityRecords() {
     Response response = null;
 
