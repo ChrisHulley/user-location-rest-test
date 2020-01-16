@@ -4,9 +4,9 @@ import es.blackleg.java.geocalc.DegreeCoordinate;
 import es.blackleg.java.geocalc.EarthCalc;
 import es.blackleg.java.geocalc.Point;
 
-public class LocationCalculator {
+public class DistanceCalculator {
 
-  private LocationCalculator() {
+  private DistanceCalculator() {
     // prevent instantiation
   }
 

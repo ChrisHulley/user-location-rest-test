@@ -10,7 +10,6 @@ public class UserRecordItem extends AbstractItem {
 
   @NotNull
   @JsonProperty("id")
-  @JsonView(RedactedUserReturn.class)
   private int id;
 
   @NotNull

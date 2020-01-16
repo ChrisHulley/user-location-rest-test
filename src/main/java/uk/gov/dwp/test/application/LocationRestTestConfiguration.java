@@ -12,19 +12,11 @@ public class LocationRestTestConfiguration extends Configuration {
   private String downstreamDataSource;
 
   @NotNull
-  @JsonProperty("homeCity")
-  private String homeCity;
-
-  @NotNull
   @JsonProperty("cityRadius")
   private int cityRadius;
 
   public String getDownstreamDataSource() {
     return downstreamDataSource;
-  }
-
-  public String getHomeCity() {
-    return homeCity;
   }
 
   public int getCityRadius() {

@@ -8,7 +8,7 @@ public class LocationInputItem extends AbstractItem {
 
   @NotNull
   @JsonProperty("city")
-  private String city;
+  private String city = "London"; // spoof default for this exercise
 
   public String getCity() {
     return city;
