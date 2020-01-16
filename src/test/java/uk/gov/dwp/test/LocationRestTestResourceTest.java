@@ -52,7 +52,7 @@ public class LocationRestTestResourceTest {
 
     downstreamReturnList =
         mapper.readValue(
-            FileUtils.readFileToString(new File("src/test/resources/cityResidents.json")),
+            FileUtils.readFileToString(new File("src/test/resources/cityOfLondonResidents.json")),
             new TypeReference<>() {});
 
     exampleLondonVicinityUserList =

@@ -47,7 +47,7 @@ public class LocationRestTestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/singleCityAndVicinityUsers")
   public Response resolveSingleCityRecords() {
-    Response response = null;
+    Response response;
 
     try {
 
@@ -145,10 +145,10 @@ public class LocationRestTestResource {
 
   private String serialiseForOutput(List<UserRecordItem> fullListItem)
       throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
+    ObjectMapper viewMapper = new ObjectMapper();
+    viewMapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
 
-    return mapper
+    return viewMapper
         .writerWithView(ViewItems.RedactedUserReturn.class)
         .writeValueAsString(fullListItem);
   }

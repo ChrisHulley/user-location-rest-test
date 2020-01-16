@@ -21,9 +21,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import uk.gov.dwp.test.application.items.UserRecordItem;
-import uk.gov.dwp.test.application.items.ViewItems;
-import uk.gov.dwp.test.application.items.ViewItems.RedactedUserReturn;
+import uk.gov.dwp.test.application.utils.UserRecordReturnItem;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -71,12 +69,17 @@ public class CucumberStepDefs {
   }
 
   @And(
-      "^the return payload should equal to the redacted version of \"([^\"]*)\"$")
-  public void thePayloadShouldEqual(String expectedOutputPath) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.readerWithView(ViewItems.RedactedUserReturn.class);
+      "^the return payload should be equal to \"([^\"]*)\"$")
+  public void thePayloadShouldEqual(String expectedBody) {
+    assertThat("payloads do not match", payload, is(equalTo(expectedBody)));
+  }
 
-    List<UserRecordItem> expectedFullList =
+  @And(
+      "^the return payload should equal to the redacted version of \"([^\"]*)\"$")
+  public void thePayloadShouldEqualTheRedactedContents(String expectedOutputPath) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+
+    List<UserRecordReturnItem> expectedFullList =
         mapper.readValue(
             FileUtils.readFileToString(new File(expectedOutputPath)),
             new TypeReference<>() {});
