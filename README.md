@@ -4,6 +4,8 @@ Simple api to demonstrate calling a downstream endpoint for user records in 'Lon
 
 For the purposes of this example the 'location' is fixed to **London** (but would most likely be an input parameter if this service was made more production ready).
 
+The specification, methods and responses are documented in the swagger [spec-api.yml](./spec-api.yml)
+
 #### code quality measures
 <hr>
 
