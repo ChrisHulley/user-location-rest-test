@@ -11,7 +11,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.eclipse.jetty.server.Authentication.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.test.application.LocationRestTestConfiguration;
@@ -58,7 +57,6 @@ public class LocationRestTestResource {
 
       List<UserRecordItem> cityUserRecords =
           resolveUserRecords(new HttpGet(buildCityLocationEndpoint(inputItem.getCity())));
-
       LOGGER.debug(
           "collected {} items from downstream service call for {} residents",
           cityUserRecords.size(),
@@ -66,7 +64,6 @@ public class LocationRestTestResource {
 
       List<UserRecordItem> allUserRecords =
           resolveUserRecords(new HttpGet(buildAllUsersEndpoint()));
-
       LOGGER.debug(
           "collected {} items from downstream service call for ALL users", allUserRecords.size());
 

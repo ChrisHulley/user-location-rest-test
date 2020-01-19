@@ -7,7 +7,7 @@ import javax.validation.Validation;
 public interface AbstractItem {
 
   @JsonIgnore
-  public default boolean isContentValid() {
+  default boolean isContentValid() {
     return Validation.buildDefaultValidatorFactory().getValidator().validate(this).isEmpty();
   }
 }

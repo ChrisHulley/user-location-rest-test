@@ -1,9 +1,14 @@
 Feature: test the application against a mocked server
 
   @StubbedService
-  Scenario: get request to an invalid endpoint
+  Scenario: get request to an invalid endpoint yeilds 404
     When I hit "http://localhost:9044/sausage" with a GET request
       Then I should get a 404 response
+
+  @StubbedService
+  Scenario: post request to the correct endpoint yeilds 405
+    When I hit "http://localhost:9044/londonCityAndVicinityUsers" with a POST request
+    Then I should get a 405 response
 
   @StubbedService
   Scenario: get request returns success with NO London residents and LONDON vicinity users
