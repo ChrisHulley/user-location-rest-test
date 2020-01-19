@@ -32,12 +32,14 @@ current output for this version
 ![sonarqube output for this version](src/test/resources/sonarqube-output.png)
 
 #### build & package
+<hr>
 
 builds the application and runs 'owasp' dependency checker for vulnerabilities (https://jeremylong.github.io/DependencyCheck/dependency-check-maven/plugin-info.html).
 
 ```mvn clean verify```
 
 #### containerise
+<hr>
 
 build the container, using the distroless version 11 base container (https://github.com/GoogleContainerTools/distroless)
 
@@ -48,6 +50,7 @@ _NOTE :: for managed devices it may be necessary to overwrite the 'cacerts' in t
 `COPY <local-path-to-cacerts> /etc/ssl/certs/java/cacerts`
 
 #### run container
+<hr>
 
 the container can either be run using standard docker commands (remembering to set any environment variables and binding the external port) or using the project's docker-compose script.
 
