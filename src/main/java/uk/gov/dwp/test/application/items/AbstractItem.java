@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.validation.Validation;
 
-public abstract class AbstractItem {
+public interface AbstractItem {
 
   @JsonIgnore
-  public boolean isContentValid() {
+  public default boolean isContentValid() {
     return Validation.buildDefaultValidatorFactory().getValidator().validate(this).isEmpty();
   }
 }

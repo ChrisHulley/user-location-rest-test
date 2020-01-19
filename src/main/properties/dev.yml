@@ -4,13 +4,13 @@ server:
     port: ${SERVER_APP_PORT:-9044}
   adminConnectors:
   - type: ${SERVER_ADMIN_CONNECTOR:-http}
-    port: ${SERVER_ADMIN_PORT:-0}
+    port: ${SERVER_ADMIN_PORT:-9045}
 
-downstreamDataSource: ${DOWNSTREAM_API_URL:-http://localhost:9898}
-cityRadius: 50
+downstreamDataSource: ${DOWNSTREAM_API_URL:-https://bpdts-test-app.herokuapp.com}
+cityRadius: ${CITY_DISTANCE_RADIUS:-50}
 
 logging:
-  level: INFO
+  level: ${GLOBAL_LOG_LEVEL:-INFO}
   loggers:
-    "uk.gov": DEBUG
+    "uk.gov": ${UK_GOV_LOG_LEVEL:-DEBUG}
 

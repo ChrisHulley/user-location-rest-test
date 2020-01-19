@@ -11,6 +11,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.jetty.server.Authentication.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.test.application.LocationRestTestConfiguration;
@@ -45,7 +46,7 @@ public class LocationRestTestResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/singleCityAndVicinityUsers")
+  @Path("/londonCityAndVicinityUsers")
   public Response resolveSingleCityRecords() {
     Response response;
 
@@ -69,10 +70,15 @@ public class LocationRestTestResource {
       LOGGER.debug(
           "collected {} items from downstream service call for ALL users", allUserRecords.size());
 
+      List<UserRecordItem> mergedForOutput =
+          mergeInLocationRecords(cityUserRecords, allUserRecords);
+      LOGGER.info(
+          "resolved {} records for London and {} mile radius users",
+          mergedForOutput.size(),
+          configuration.getCityRadius());
+
       response =
-          Response.status(HttpStatus.SC_OK)
-              .entity(serialiseForOutput(mergeInLocationRecords(cityUserRecords, allUserRecords)))
-              .build();
+          Response.status(HttpStatus.SC_OK).entity(serialiseForOutput(mergedForOutput)).build();
 
     } catch (UserLocationException | IOException e) {
       response =
@@ -125,6 +131,8 @@ public class LocationRestTestResource {
       List<UserRecordItem> inputList, List<UserRecordItem> allUsersList) {
 
     List<Integer> userListIds = calcCityUserIds(inputList);
+    List<UserRecordItem> outputList = new ArrayList<>(inputList);
+
     for (UserRecordItem item : allUsersList) {
 
       if (!userListIds.contains(item.getId())
@@ -136,11 +144,11 @@ public class LocationRestTestResource {
               configuration.getCityRadius())) {
 
         userListIds.add(item.getId());
-        inputList.add(item);
+        outputList.add(item);
       }
     }
 
-    return inputList;
+    return outputList;
   }
 
   private String serialiseForOutput(List<UserRecordItem> fullListItem)

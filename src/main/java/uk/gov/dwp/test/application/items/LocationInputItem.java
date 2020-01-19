@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 
-public class LocationInputItem extends AbstractItem {
+public class LocationInputItem implements AbstractItem {
 
   @NotNull
   @JsonProperty("city")

@@ -22,6 +22,7 @@
     <mockito.version>1.10.19</mockito.version>
     <jackson.version>2.10.1</jackson.version>
     <geocalc.version>1.0.1</geocalc.version>
+    <jacoco.version>0.8.2</jacoco.version>
     <junit.version>4.12</junit.version>
     <jaxb.version>2.3.0</jaxb.version>
   </properties>
@@ -245,15 +246,30 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.2</version>
         <configuration>
+          <encoding>UTF-8</encoding>
           <source>11</source>
           <target>11</target>
-          <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.5.201505241946</version>
+        <version>${jacoco.version}</version>
+        <executions>
+          <execution>
+            <id>jacoco-initialize</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-complete</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
