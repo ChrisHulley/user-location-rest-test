@@ -1,0 +1,19 @@
+version: "2.1"
+services:
+
+  user-rest-test:
+    image: user-location-rest-test:latest
+    networks:
+      - api
+    ports:
+      - 9044:9044
+      - 9045:9045
+    environment:
+      - DOWNSTREAM_API_URL=https://bpdts-test-app.herokuapp.com
+      - CITY_DISTANCE_RADIUS=50
+      - GLOBAL_LOG_LEVEL=INFO
+      - UK_GOV_LOG_LEVEL=DEBUG
+
+networks:
+  api:
+    driver: bridge

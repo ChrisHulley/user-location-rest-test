@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import javax.validation.constraints.NotNull;
 import uk.gov.dwp.test.application.items.ViewItems.RedactedUserReturn;
 
-public class UserRecordItem extends AbstractItem {
+public class UserRecordItem implements AbstractItem {
 
   @NotNull
   @JsonProperty("id")

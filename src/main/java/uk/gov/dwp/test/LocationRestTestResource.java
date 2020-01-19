@@ -45,9 +45,9 @@ public class LocationRestTestResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/resolveHomeCityResidents")
+  @Path("/londonCityAndVicinityUsers")
   public Response resolveSingleCityRecords() {
-    Response response = null;
+    Response response;
 
     try {
 
@@ -57,7 +57,6 @@ public class LocationRestTestResource {
 
       List<UserRecordItem> cityUserRecords =
           resolveUserRecords(new HttpGet(buildCityLocationEndpoint(inputItem.getCity())));
-
       LOGGER.debug(
           "collected {} items from downstream service call for {} residents",
           cityUserRecords.size(),
@@ -65,14 +64,18 @@ public class LocationRestTestResource {
 
       List<UserRecordItem> allUserRecords =
           resolveUserRecords(new HttpGet(buildAllUsersEndpoint()));
-
       LOGGER.debug(
           "collected {} items from downstream service call for ALL users", allUserRecords.size());
 
+      List<UserRecordItem> mergedForOutput =
+          mergeInLocationRecords(cityUserRecords, allUserRecords);
+      LOGGER.info(
+          "resolved {} records for London and {} mile radius users",
+          mergedForOutput.size(),
+          configuration.getCityRadius());
+
       response =
-          Response.status(HttpStatus.SC_OK)
-              .entity(serialiseForOutput(mergeInLocationRecords(cityUserRecords, allUserRecords)))
-              .build();
+          Response.status(HttpStatus.SC_OK).entity(serialiseForOutput(mergedForOutput)).build();
 
     } catch (UserLocationException | IOException e) {
       response =
@@ -125,6 +128,8 @@ public class LocationRestTestResource {
       List<UserRecordItem> inputList, List<UserRecordItem> allUsersList) {
 
     List<Integer> userListIds = calcCityUserIds(inputList);
+    List<UserRecordItem> outputList = new ArrayList<>(inputList);
+
     for (UserRecordItem item : allUsersList) {
 
       if (!userListIds.contains(item.getId())
@@ -136,19 +141,19 @@ public class LocationRestTestResource {
               configuration.getCityRadius())) {
 
         userListIds.add(item.getId());
-        inputList.add(item);
+        outputList.add(item);
       }
     }
 
-    return inputList;
+    return outputList;
   }
 
   private String serialiseForOutput(List<UserRecordItem> fullListItem)
       throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
+    ObjectMapper viewMapper = new ObjectMapper();
+    viewMapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
 
-    return mapper
+    return viewMapper
         .writerWithView(ViewItems.RedactedUserReturn.class)
         .writeValueAsString(fullListItem);
   }

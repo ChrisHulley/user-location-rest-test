@@ -15,7 +15,7 @@ import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
   "squid:S2187",
   "squid:S1118"
 }) // deliberately has no tests and no private constructor needed
-@CucumberOptions(plugin = "json:target/cucumber-report.json")
+@CucumberOptions(plugin = "json:target/cucumber-report.json", tags = "@StubbedService")
 public class RunCukesTest {
 
   @ClassRule
