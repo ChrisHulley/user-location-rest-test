@@ -3,7 +3,6 @@ package uk.gov.dwp.test.cucumber;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -45,6 +44,11 @@ public class CucumberStepDefs {
 
   @After
   public void tearDown() {
+    downstreamService.stop();
+  }
+
+  @Given("^I bring down the remote service$")
+  public void iBringDownTheRemoteService() {
     downstreamService.stop();
   }
 
