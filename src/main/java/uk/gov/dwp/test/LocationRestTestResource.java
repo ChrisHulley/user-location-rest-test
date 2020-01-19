@@ -84,6 +84,15 @@ public class LocationRestTestResource {
               .build();
       LOGGER.debug(e.getClass().getName(), e);
       LOGGER.error(e.getMessage());
+
+    } catch (Exception e) {
+      response =
+          Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+              .entity(String.format("%s :: %s", e.getClass().getName(), e.getMessage()))
+              .build();
+
+      LOGGER.debug(e.getClass().getName(), e);
+      LOGGER.error(e.getMessage());
     }
 
     return response;

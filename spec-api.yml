@@ -1,0 +1,68 @@
+openapi: '3.0.0'
+info:
+  description: >-
+    Technical assignment to expose an api that will communicate to a down stream service and resolve users living in 'London' and users whose geographic location (lat/long) is within 50 miles of London.  Souced from -> https://bpdts-test-app.herokuapp.com
+  version: develop
+  title: Software Engineering Technical Test
+
+paths:
+  /londonCityAndVicinityUsers:
+    get:
+      summary: return user records
+      description: Call a downstream API, and returns people who are listed as either living in London, or whose current coordinates are within 50 miles of London
+      responses:
+        200:
+          description: the combined list of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReturnRecord'
+        400:
+          description: Downstream service interaction error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: downstream service 'http://localhost:9898' returned 500, rejecting
+        404:
+          description: endpoint not found
+          content:
+            application/json:
+              schema:
+                type: string
+                example: {"code":404,"message":"HTTP 404 Not Found"}
+        405:
+          description: incorrect query method (eg POST vs GET)
+          content:
+            application/json:
+              schema:
+                type: string
+                example: {"code":405,"message":"HTTP 405 Method Not Allowed"}
+        500:
+          description: Any other application internal error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: internal socket error
+
+components:
+  schemas:
+    UserReturnRecord:
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+  
+    User:
+      type: object
+      properties:
+        first_name:
+          description: The user's first name
+          example: Robert
+          type: string
+        last_name:
+          description: The user's surname
+          example: Johnson
+          type: string
+          
+          
