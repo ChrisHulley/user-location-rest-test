@@ -5,7 +5,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -124,37 +126,27 @@ public class LocationRestTestResource {
     return String.format(DOWNSTREAM_ALL_USERS_ENDPOINT, configuration.getDownstreamDataSource());
   }
 
-  private List<Integer> calcCityUserIds(List<UserRecordItem> inputItems) {
-    ArrayList<Integer> outList = new ArrayList<>();
-    for (UserRecordItem item : inputItems) {
-      outList.add(item.getId());
-    }
-
-    return outList;
-  }
-
   private List<UserRecordItem> mergeInLocationRecords(
       List<UserRecordItem> inputList, List<UserRecordItem> allUsersList) {
 
-    List<Integer> userListIds = calcCityUserIds(inputList);
-    List<UserRecordItem> outputList = new ArrayList<>(inputList);
-
+    List<UserRecordItem> locationList = new ArrayList<>();
     for (UserRecordItem item : allUsersList) {
 
-      if (!userListIds.contains(item.getId())
-          && DistanceCalculator.distanceWithinAllowableRadius(
+      if (DistanceCalculator.distanceWithinAllowableRadius(
               ServiceConstants.LONDON_LAT,
               ServiceConstants.LONDON_LNG,
               item.getLatitude(),
               item.getLongitude(),
               configuration.getCityRadius())) {
 
-        userListIds.add(item.getId());
-        outputList.add(item);
+        locationList.add(item);
       }
     }
 
-    return outputList;
+    Set<UserRecordItem> mergedSet = new HashSet<>(inputList);
+    mergedSet.addAll(locationList);
+
+    return new ArrayList<>(mergedSet);
   }
 
   private String serialiseForOutput(List<UserRecordItem> fullListItem)

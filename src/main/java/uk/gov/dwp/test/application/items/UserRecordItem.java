@@ -1,8 +1,10 @@
 package uk.gov.dwp.test.application.items;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import java.util.Objects;
 import javax.validation.constraints.NotNull;
 import uk.gov.dwp.test.application.items.ViewItems.RedactedUserReturn;
 
@@ -92,5 +94,21 @@ public class UserRecordItem implements AbstractItem {
 
   public void setLongitude(double longitude) {
     this.longitude = longitude;
+  }
+
+  @Override
+  @JsonIgnore
+  public int hashCode() {
+    return Objects.hash(this.getId(), this.getFirstName(), this.getLastName());
+  }
+
+  @Override
+  @JsonIgnore
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    return this.getId() == ((UserRecordItem) o).getId();
   }
 }
