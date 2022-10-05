@@ -20,7 +20,7 @@
     <snakeyaml.version>1.24</snakeyaml.version>
     <wiremock.version>2.6.0</wiremock.version>
     <mockito.version>1.10.19</mockito.version>
-    <jackson.version>2.10.1</jackson.version>
+    <jackson.version>2.12.6.1</jackson.version>
     <geocalc.version>1.0.1</geocalc.version>
     <jacoco.version>0.8.2</jacoco.version>
     <junit.version>4.12</junit.version>
